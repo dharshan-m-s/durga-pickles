@@ -6,6 +6,7 @@ export default function Spotlight({ className='', children }) {
     const el = ref.current;
     if (!el) return;
     const move = (e) => {
+      if (e.pointerType !== 'mouse' || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
       const r = el.getBoundingClientRect();
       el.style.setProperty('--mx', `${e.clientX - r.left}px`);
       el.style.setProperty('--my', `${e.clientY - r.top}px`);

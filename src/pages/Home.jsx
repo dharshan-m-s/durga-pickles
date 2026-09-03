@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, ArrowUpRight, ChevronDown, Leaf, MessageCircle, MoveRight, Sparkles } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, ChevronDown, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import Reveal from '../components/Reveal';
@@ -7,90 +7,103 @@ import ProductCard from '../components/ProductCard';
 import GlowCard from '../components/GlowCard';
 import MagneticButton from '../components/MagneticButton';
 import Marquee from '../components/Marquee';
-import AnimatedNumber from '../components/AnimatedNumber';
 import { products } from '../data/products';
 
 const ease=[.22,1,.36,1];
+const wa='https://wa.me/919020654578?text=Hello%20Durga%20Pickles%2C%20I%20would%20like%20to%20make%20an%20enquiry.';
+
+const floatItems=[
+  ['originals/cut-mango-pickle.jpg','Cut Mango'],
+  ['originals/lime-pickle.jpg','Lime'],
+  ['originals/avakkai-mango-pickle.jpg','Avakkai'],
+  ['originals/pullinji-pickle.jpg','Pullinji']
+];
 
 export default function Home(){
- const featured=products.slice(0,5);
+ const featured=products.slice(0,6);
  return <>
   <section className="hero-premium">
-    <div className="hero-ambient hero-ambient-a"/><div className="hero-ambient hero-ambient-b"/>
-    <div className="hero-grid-premium container">
+    <div className="hero-grid-lines" aria-hidden="true"/>
+    <div className="hero-orb hero-orb-a" aria-hidden="true"/>
+    <div className="hero-orb hero-orb-b" aria-hidden="true"/>
+    <div className="container hero-grid-premium">
       <div className="hero-copy-premium">
-        <Reveal><div className="hero-eyebrow"><span className="live-dot"/> DURGA PICKLES <i>•</i> SINCE 1996</div></Reveal>
-        <motion.h1 initial={{opacity:0,y:45}} animate={{opacity:1,y:0}} transition={{duration:.9,ease}}>
-          Taste with a <em>history.</em>
+        <Reveal><div className="hero-eyebrow"><span className="eyebrow-rule"/> DURGA PICKLES <i>•</i> SINCE 1996</div></Reveal>
+        <motion.h1 initial={{opacity:0,y:42}} animate={{opacity:1,y:0}} transition={{duration:.9,ease}}>
+          <span>Made for</span><br/><em>the table.</em>
         </motion.h1>
-        <motion.p initial={{opacity:0,y:22}} animate={{opacity:1,y:0}} transition={{duration:.7,delay:.14,ease}}>
-          Durga Pickles by Sree Durga Food Products, Pazhayannur, Thrissur, Kerala.
+        <motion.p initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{duration:.7,delay:.12,ease}}>
+          Explore the current Durga collection of pickles, kondattam and traditional food products.
         </motion.p>
         <motion.div className="hero-actions-premium" initial={{opacity:0,y:18}} animate={{opacity:1,y:0}} transition={{duration:.65,delay:.22,ease}}>
           <MagneticButton href="/products" className="btn-premium"><span>Explore products</span><ArrowRight size={17}/></MagneticButton>
-          <Link to="/contact" className="quiet-link">Enquire <MoveRight size={16}/></Link>
+          <Link to="/contact" className="quiet-link">Make an enquiry <ArrowUpRight size={16}/></Link>
         </motion.div>
         <Reveal delay={.25}><div className="hero-metrics">
-          <div><b><AnimatedNumber value={1996}/></b><span>Established</span></div>
+          <div><b>Since 1996</b><span>Durga Pickles</span></div>
           <div><b>Kerala</b><span>Pazhayannur · Thrissur</span></div>
-          <div><b>Durga</b><span>Sree Durga Food Products</span></div>
+          <div><b>Real products</b><span>Current collection</span></div>
         </div></Reveal>
       </div>
       <div className="hero-visual-premium">
         <div className="hero-stage">
-          <div className="stage-grid"/>
-          <div className="stage-sun"/>
-          <motion.div className="hero-main-photo" initial={{opacity:0,scale:.94,rotate:2}} animate={{opacity:1,scale:1,rotate:-1}} transition={{duration:1.05,ease}} whileHover={{scale:1.018}}>
-            <img src="/products/all-products.jpg" alt="Durga Pickles product collection"/>
-            <div className="photo-gloss"/>
+          <div className="stage-label">THE DURGA COLLECTION</div>
+          <motion.div className="hero-main-photo hero-main-photo-original" initial={{opacity:0,scale:.92,rotate:2}} animate={{opacity:1,scale:1,rotate:-1}} transition={{duration:1.05,ease}} whileHover={{scale:1.012}}>
+            <img src="/products/originals/collection-wide-1.jpg" alt="Durga Pickles product collection" fetchPriority="high" decoding="async"/>
+            <div className="photo-vignette"/>
           </motion.div>
-          <motion.div className="year-seal" initial={{opacity:0,scale:.65,rotate:-15}} animate={{opacity:1,scale:1,rotate:-8}} transition={{duration:.8,delay:.35,ease}}>
-            <small>SINCE</small><strong>1996</strong><span>DURGA</span>
-          </motion.div>
-          <motion.div className="hero-tag hero-tag-1" animate={{y:[0,-7,0]}} transition={{repeat:Infinity,duration:4,ease:'easeInOut'}}><Sparkles size={14}/><span>Pickles</span></motion.div>
-          <motion.div className="hero-tag hero-tag-2" animate={{y:[0,6,0]}} transition={{repeat:Infinity,duration:4.5,ease:'easeInOut'}}><Leaf size={14}/><span>Kerala</span></motion.div>
-          <div className="hero-caption-premium"><span>THE COLLECTION</span><b>Real products. Real Durga.</b><ArrowUpRight size={18}/></div>
+          <motion.div className="hero-floating floating-a" initial={{opacity:0,y:20,scale:.94}} animate={{opacity:1,y:[0,-9,0],scale:1}} transition={{opacity:{duration:.6,delay:.35},y:{duration:5,repeat:Infinity,ease:'easeInOut'},scale:{duration:.5,delay:.35}}}><img src="/products/originals/lime-pickle.jpg" alt="Durga Lime Pickle"/><span>Lime</span></motion.div>
+          <motion.div className="hero-floating floating-b" initial={{opacity:0,y:20,scale:.94}} animate={{opacity:1,y:[0,7,0],scale:1}} transition={{opacity:{duration:.6,delay:.5},y:{duration:5.5,repeat:Infinity,ease:'easeInOut'},scale:{duration:.5,delay:.5}}}><img src="/products/originals/avakkai-mango-pickle.jpg" alt="Durga Avakkai Mango Pickle"/><span>Avakkai</span></motion.div>
+          <div className="year-seal"><small>SINCE</small><strong>1996</strong><span>DURGA</span></div>
+          <div className="hero-stage-caption"><span>REAL PACKAGING</span><b>Durga Collection</b><ArrowUpRight size={17}/></div>
         </div>
       </div>
     </div>
-    <a className="hero-scroll-indicator" href="#featured"><span>Discover</span><ChevronDown size={18}/></a>
+    <a className="hero-scroll-indicator" href="#featured"><span>Discover the collection</span><ChevronDown size={17}/></a>
   </section>
 
   <Marquee/>
 
+  <section className="real-collection-section">
+    <div className="container real-collection-grid">
+      <Reveal className="real-collection-copy"><div className="eyebrow-line">THE REAL COLLECTION</div><h2>What you see is <em>what we make.</em></h2><p>These photographs use the actual Durga packs supplied for the site. No generated packaging, invented labels or artificial product claims.</p><Link className="text-link-large" to="/gallery">See every photograph <ArrowRight size={17}/></Link></Reveal>
+      <Reveal delay={.08} className="real-collection-photo"><Link to="/gallery" aria-label="View the full Durga collection gallery"><img src="/products/originals/collection-wide-2.jpg" alt="Durga Pickles product collection — second photograph" loading="lazy" decoding="async"/><span>REAL PACKAGING <ArrowUpRight size={15}/></span></Link></Reveal>
+    </div>
+  </section>
+
   <section className="featured-section" id="featured">
     <div className="container">
       <div className="section-heading-row">
-        <Reveal><div><div className="eyebrow-line">THE COLLECTION</div><h2>Pickles, <em>favourites</em><br/>and more.</h2></div></Reveal>
+        <Reveal><div><div className="eyebrow-line">THE COLLECTION</div><h2>Pickles first.<br/><em>Then everything else.</em></h2></div></Reveal>
         <Reveal delay={.1}><Link to="/products" className="round-link">View all <ArrowUpRight size={18}/></Link></Reveal>
       </div>
       <div className="featured-products-grid">{featured.map((p,i)=><ProductCard key={p.id} product={p} index={i}/>)}</div>
     </div>
   </section>
 
-  <section className="identity-section">
-    <div className="container identity-grid">
-      <div className="identity-copy">
-        <Reveal><div className="eyebrow-line">SINCE 1996</div><h2>One brand.<br/><em>One recognisable taste.</em></h2><p>Durga Pickles is presented here exactly as the brand exists on the packet: simple, familiar and rooted in Pazhayannur.</p></Reveal>
-        <Reveal delay={.1}><Link className="text-link-large" to="/gallery">See the real collection <ArrowRight size={17}/></Link></Reveal>
+  <section className="brand-section">
+    <div className="container brand-split">
+      <Reveal className="brand-copy"><div className="eyebrow-line">SINCE 1996</div><h2>A brand identity you can <em>recognise.</em></h2><p>Keep the Durga mark front and centre. The current website uses the real packaging supplied by the brand and leaves space for future professional photography.</p><Link className="text-link-large" to="/gallery">View the real collection <ArrowRight size={17}/></Link></Reveal>
+      <div className="brand-orbit" aria-hidden="true">
+        <div className="orbit-ring ring-1"/><div className="orbit-ring ring-2"/>
+        <div className="brand-medallion"><span>DURGA</span><small>SINCE 1996</small></div>
+        {floatItems.map(([src,label],i)=><motion.div key={src} className={`orbit-product orbit-${i}`} animate={{y:[0,i%2?7:-7,0]}} transition={{duration:4+i*.4,repeat:Infinity,ease:'easeInOut'}}><img src={`/products/${src}`} alt=""/><span>{label}</span></motion.div>)}
       </div>
-      <GlowCard className="identity-card"><div className="identity-burst">DURGA</div><div className="identity-card-copy"><small>THE BRAND MARK</small><h3>Since 1996</h3><p>Product photography can keep evolving; the identity stays recognisable.</p></div><div className="identity-card-line"><span/><b>1996</b><span/></div></GlowCard>
     </div>
   </section>
 
-  <section className="numbers-section">
-    <div className="container numbers-grid">
-      <GlowCard className="number-card"><AnimatedNumber value={1996}/><small>Since</small></GlowCard>
-      <GlowCard className="number-card"><span>09</span><small>Products listed</small></GlowCard>
-      <GlowCard className="number-card"><span>03</span><small>Core categories</small></GlowCard>
-      <GlowCard className="number-card"><span>01</span><small>Durga identity</small></GlowCard>
+  <section className="signal-section">
+    <div className="container signal-grid">
+      <Reveal><div className="signal-card signal-dark"><span className="signal-number">01</span><div><b>Since 1996</b><p>Durga Pickles</p></div></div></Reveal>
+      <Reveal delay={.06}><div className="signal-card"><span className="signal-number">02</span><div><b>Products</b><p>{products.length} currently listed</p></div></div></Reveal>
+      <Reveal delay={.12}><div className="signal-card"><span className="signal-number">03</span><div><b>Categories</b><p>Pickles · Kondattam · Powders</p></div></div></Reveal>
     </div>
   </section>
 
   <section className="home-contact-section">
     <div className="container contact-hero-card">
-      <div><div className="eyebrow-line">ENQUIRIES</div><h2>Ready to talk <em>Durga?</em></h2><p>For product availability, business enquiries and general questions.</p></div>
-      <div className="contact-hero-actions"><a className="btn-premium light" href="https://wa.me/919020654578?text=Hello%20Durga%20Pickles%2C%20I%20would%20like%20to%20make%20an%20enquiry." target="_blank" rel="noreferrer"><MessageCircle size={17}/> WhatsApp us</a><Link className="light-outline-link" to="/contact">Contact page <ArrowRight size={16}/></Link></div>
+      <div><div className="eyebrow-line">DIRECT ENQUIRIES</div><h2>Talk to <em>Durga.</em></h2><p>For product availability, business enquiries and general questions.</p></div>
+      <div className="contact-hero-actions"><a className="btn-premium light" href={wa} target="_blank" rel="noreferrer"><MessageCircle size={17}/> WhatsApp us</a><Link className="light-outline-link" to="/contact">Contact details <ArrowRight size={16}/></Link></div>
     </div>
   </section>
  </>

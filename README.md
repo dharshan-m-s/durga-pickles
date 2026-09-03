@@ -1,26 +1,6 @@
-# Durga Pickles — Premium React App
+# Durga Pickles — Premium Mobile-First React App
 
-A responsive React/Vite website for Durga Pickles / Sree Durga Food Products.
-
-## Design sources researched
-- **Vengeance UI** — used as inspiration for spotlight surfaces, glow-border cards, magnetic interactions, animated hero/navigation patterns, and scroll-friendly motion. Vengeance UI describes its components as open-source, React/Next.js compatible, with Framer Motion and Tailwind in its stack.
-- **Animate UI** — used as inspiration for animation-first, copy-owned React primitives and restrained motion. Animate UI is a copy-first component distribution built around Motion and Tailwind.
-- **Uiverse** — used as inspiration for open CSS/React micro-interactions, buttons, hover states, cards, and patterns. Its public repository states the elements are MIT licensed and the site offers HTML/CSS, Tailwind, React and Figma formats.
-- **Uilora** — used as inspiration for cinematic, interaction-first composition and keeping complex motion modular. Uilora documents a copy-paste approach and cautions against overloading a view with heavy animations.
-- **Forget UI** — researched, but the available package is a Vue 2 component library with releases from 2019/2020. It is not installed into this React 19 app because forcing a legacy Vue dependency into a React application would add unnecessary incompatibility.
-
-## Project
-- React 19 + Vite
-- React Router
-- Motion for React
-- Lucide icons
-- Data-driven product catalogue
-- Product filters/search
-- Product detail routes
-- WhatsApp enquiry links
-- Gallery lightbox
-- Responsive navigation
-- Reduced motion support
+A production-oriented React/Vite frontend for Durga Pickles (Sree Durga Food Products), built around the supplied real product photography and the known brand detail **Since 1996**.
 
 ## Run
 ```bash
@@ -28,14 +8,31 @@ npm install
 npm run dev
 ```
 
+## Features
+- React + Vite + React Router
+- Motion-powered page transitions and micro-interactions
+- Apple HIG-inspired hierarchy, simplicity, consistency and accessibility
+- Product catalogue with category filtering and search
+- Dynamic product detail pages
+- Original-photo Gallery with full-resolution lightbox
+- Supplied collection photographs integrated into the Home page
+- Product cards preserve supplied portrait packaging instead of cropping it
+- WhatsApp product enquiries
+- Contact form that opens WhatsApp with the enquiry
+- Mobile quick-navigation dock with safe-area support
+- Responsive navigation and mobile-first layouts from 320px upward
+- Scroll progress indicator
+- Reduced-motion support
+- Keyboard focus states and touch-friendly controls
+- Vengeance UI / Animate UI / Uiverse / Uilora interaction patterns adapted without adding unnecessary runtime dependencies
 
-## Mobile-first audit (2026-09-01)
-- Tuned layouts for 320px through large desktop widths.
-- Added `viewport-fit=cover`, safe-area spacing, and dynamic viewport sizing.
-- Mobile navigation uses a scrollable drawer and locks background scrolling while open.
-- Touch controls use ~44px or larger targets where practical.
-- Product catalog uses compact two-column cards on phones; ultra-small screens retain a safe compact layout.
-- Search and form controls use a 16px input font to avoid iOS Safari auto-zoom.
-- Hover-only interactions are disabled on touch devices.
-- Added a non-blocking floating WhatsApp enquiry affordance on phones.
-- Gallery/lightbox and hero composition were tuned for short phone viewports.
+## Original image assets
+The supplied photographs are stored in:
+`public/products/originals/`
+
+They are copied as original JPEGs without resizing or recompression. The Gallery and Product Detail views display those original files.
+
+## Important
+The site intentionally avoids unsupported business claims and does not invent company history, certifications, awards, health claims, quality claims, or manufacturing claims.
+
+Contact/product details should be verified against company records before public launch.

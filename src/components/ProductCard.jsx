@@ -5,13 +5,13 @@ import { motion } from 'motion/react';
 import GlowCard from './GlowCard';
 
 export default function ProductCard({product,index=0}){
- return <motion.article className="product-card-premium" initial={{opacity:0,y:30}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.12}} transition={{duration:.6,delay:index*.045,ease:[.22,1,.36,1]}}>
+ return <motion.article className="product-card-premium" initial={{opacity:0,y:26}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.08}} transition={{duration:.62,delay:index*.045,ease:[.22,1,.36,1]}}>
    <GlowCard>
-    <Link to={`/products/${product.id}`} className="product-visual">
+    <Link to={`/products/${product.id}`} className={`product-visual ${product.image.includes("/originals/") ? "product-visual-original" : ""}`} aria-label={`View ${product.name}`}>
       <img src={product.image} alt={product.name} loading="lazy"/>
       <span className="product-category">{product.category}</span><span className="product-arrow"><ArrowUpRight size={17}/></span>
     </Link>
-    <div className="product-copy"><div><h3>{product.name}</h3><p>{product.description}</p></div><div className="product-bottom"><span>{product.size}</span><Link to={`/products/${product.id}`}>View details</Link></div></div>
+    <div className="product-copy"><div><h3>{product.name}</h3><p>{product.description}</p></div><div className="product-bottom"><span>{product.size}</span><Link to={`/products/${product.id}`}>View details <ArrowUpRight size={13}/></Link></div></div>
    </GlowCard>
  </motion.article>
 }
