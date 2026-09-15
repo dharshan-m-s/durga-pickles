@@ -1,8 +1,11 @@
 {
   "name": "durga-foods-cms",
   "private": true,
-  "version": "2.1.0",
+  "version": "2.2.0",
   "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "dev": "vite",
     "dev:server": "node server/index.js",
