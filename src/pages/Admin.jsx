@@ -1,0 +1,492 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ArrowLeft, BarChart3, Check, ChevronRight, Database, Download, ExternalLink,
+  Eye, FileImage, FolderOpen, Globe2, ImagePlus, LayoutDashboard, LogOut, Menu,
+  Package, Pencil, Plus, RefreshCw, Save, Search, Settings2, ShieldCheck, Smartphone,
+  Trash2, Upload, X, CheckCircle2, AlertTriangle, Copy, Wand2
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { apiRequest, sanitizeUrl } from '../lib';
+
+const emptyProduct = { id:'', name:'', category:'Pickles', size:'', price:'', mrp:'', image:'', description:'', featured:false, order:0 };
+const emptyGallery = { id:'', src:'', label:'', type:'portrait', order:0 };
+
+function Field({label, hint, children}) {
+  return <label className="cms-field"><span>{label}</span>{children}{hint && <small>{hint}</small>}</label>;
+}
+
+function Toast({toast, onClose}) {
+  if (!toast) return null;
+  return <div className={`cms-toast ${toast.type || 'success'}`} role="status">
+    {toast.type === 'error' ? <AlertTriangle size={17}/> : <CheckCircle2 size={17}/>}<span>{toast.message}</span>
+    <button className="cms-toast-close" onClick={onClose} aria-label="Dismiss"><X size={15}/></button>
+  </div>;
+}
+
+function ConfirmDialog({title, message, confirmLabel='Delete', danger=true, onCancel, onConfirm, busy=false}) {
+  return <div className="cms-confirm-backdrop" role="presentation" onMouseDown={(e)=>{if(e.currentTarget===e.target && !busy) onCancel()}}>
+    <div className="cms-confirm" role="dialog" aria-modal="true" aria-labelledby="cms-confirm-title">
+      <div className={`cms-confirm-icon ${danger?'danger':''}`}>{danger?<Trash2 size={20}/>:<AlertTriangle size={20}/>}</div>
+      <h3 id="cms-confirm-title">{title}</h3><p>{message}</p>
+      <div className="cms-form-actions"><button className="cms-secondary-btn" onClick={onCancel} disabled={busy}>Cancel</button><button className={`cms-primary-btn ${danger?'cms-danger-btn':''}`} onClick={onConfirm} disabled={busy}>{busy?<RefreshCw className="spin" size={16}/>:null}{busy?'Working…':confirmLabel}</button></div>
+    </div>
+  </div>;
+}
+
+function Modal({title, eyebrow='CONTENT EDITOR', onClose, children}) {
+  useEffect(()=>{const previous=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=previous}},[]);
+  return <div className="cms-modal-backdrop" role="presentation" onMouseDown={(e)=>{if(e.currentTarget===e.target)onClose()}}>
+    <div className="cms-modal" role="dialog" aria-modal="true" aria-label={title}>
+      <div className="cms-modal-head"><div><span className="cms-kicker">{eyebrow}</span><h3>{title}</h3></div><button className="cms-icon-btn" onClick={onClose} aria-label="Close"><X size={19}/></button></div>
+      {children}
+    </div>
+  </div>;
+}
+
+function ImagePreview({src, alt='Preview', className=''}) {
+  const [failed,setFailed]=useState(false);
+  useEffect(()=>setFailed(false),[src]);
+  const safeSrc = sanitizeUrl(src);
+  if (!safeSrc || failed) return <div className={`cms-image-placeholder ${className}`}><FileImage size={22}/><span>{src ? 'Image unavailable' : 'No image selected'}</span></div>;
+  return <img className={className} src={safeSrc} alt={alt} onError={()=>setFailed(true)} />;
+}
+
+function UploadButton({onUploaded, current='', label='Upload image'}) {
+  const [busy,setBusy]=useState(false);
+  const inputRef=useRef(null);
+  async function upload(file){
+    if(!file)return;
+    if(!file.type.startsWith('image/')){alert('Please choose an image file.');return;}
+    if(file.size>20*1024*1024){alert('Image must be 20 MB or smaller.');return;}
+    setBusy(true);
+    try{const fd=new FormData();fd.append('file',file);const out=await apiRequest('/api/upload',{method:'POST',body:fd});onUploaded(out.url);}
+    catch(e){alert(e.message)} finally{setBusy(false);if(inputRef.current)inputRef.current.value='';}
+  }
+  return <div className="cms-upload-row">
+    <button type="button" className="cms-upload-btn" onClick={()=>inputRef.current?.click()} disabled={busy}>{busy?<RefreshCw className="spin" size={15}/>:<Upload size={15}/>} {busy?'Uploading…':label}</button>
+    <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" hidden onChange={e=>upload(e.target.files?.[0])}/>
+    {current && <a className="cms-open-image" href={sanitizeUrl(current)} target="_blank" rel="noreferrer"><Eye size={14}/> Preview</a>}
+  </div>;
+}
+
+function LoginScreen({configured,onDone}){
+  const [password,setPassword]=useState(''); const [busy,setBusy]=useState(false); const [error,setError]=useState('');
+  const [csrfToken, setCsrfToken] = useState('');
+  async function submit(e){e.preventDefault();setError('');setBusy(true);try{const res = await apiRequest('/api/auth/login',{method:'POST',body:JSON.stringify({password})});if(res.csrfToken) {localStorage.setItem('csrfToken', res.csrfToken);}await onDone()}catch(e){setError(e.message)}finally{setBusy(false)}}
+  return <div className="cms-login"><div className="cms-login-card">
+    <div className="cms-login-logo"><img src="/brand/durga-foods-logo.png" alt="Durga Foods"/></div><span className="cms-kicker">DURGA FOODS CMS</span>
+    <h1>Welcome back.</h1><p>Manage the storefront, prices, images and website settings.</p>
+    <div className="cms-login-trust"><ShieldCheck size={15}/><span>Private admin area · password is managed server-side through <code>.env</code></span></div>
+    {!configured&&<div className="cms-error">Admin password is not configured. Add <strong>ADMIN_PASSWORD</strong> to the server <code>.env</code> file and restart the server.</div>}
+    <form onSubmit={submit} className="cms-form"><Field label="Admin password"><input className="cms-input" type="password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password" required minLength={1} placeholder="Enter your admin password"/></Field>
+    {error&&<div className="cms-error">{error}</div>}<button className="cms-primary-btn cms-full-btn" type="submit" disabled={busy||!configured}>{busy?<RefreshCw className="spin" size={16}/>:<ShieldCheck size={16}/>} {busy?'Please wait…':'Sign in'}</button></form>
+    <Link to="/" className="cms-back-site"><ArrowLeft size={15}/> Back to website</Link>
+  </div></div>;
+}
+
+function ProductEditor({product, onClose, onSaved, onToast}){
+  const [form,setForm]=useState({...product}); const [busy,setBusy]=useState(false); const [imageTouched,setImageTouched]=useState(false);
+  const priceValid=form.price==='' || (/^\d+(\.\d{1,2})?$/.test(String(form.price)));
+  const mrpValid=form.mrp==='' || (/^\d+(\.\d{1,2})?$/.test(String(form.mrp)));
+  const save=async(e)=>{e.preventDefault();if(!priceValid||!mrpValid){onToast('Use a valid amount such as 120 or 120.50','error');return}setBusy(true);try{const out=await apiRequest(form.id?`/api/products/${form.id}`:'/api/products',{method:form.id?'PUT':'POST',body:JSON.stringify({...form,order:Number(form.order||0),price:String(form.price).trim(),mrp:String(form.mrp).trim()})});await onSaved(out);onToast(form.id?'Product updated':'Product added');onClose()}catch(err){onToast(err.message,'error')}finally{setBusy(false)}};
+  return <Modal title={form.id?'Edit product':'Add product'} onClose={onClose}>
+    <form className="cms-form" onSubmit={save}>
+      <div className="cms-editor-preview"><div className="cms-editor-thumb"><ImagePreview src={form.image} alt={form.name||'Product'}/></div><div><span className="cms-kicker">LIVE CATALOGUE ITEM</span><strong>{form.name||'Untitled product'}</strong><span>{form.size||'Weight not set'} · {form.price?`₹${form.price}`:'Price not published'}</span></div></div>
+      <div className="cms-form-grid"><Field label="Product name"><input className="cms-input" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} required placeholder="e.g. Mango Pickle"/></Field><Field label="Category"><input className="cms-input" value={form.category} onChange={e=>setForm({...form,category:e.target.value})} placeholder="Pickles" required/></Field><Field label="Net weight"><input className="cms-input" value={form.size} onChange={e=>setForm({...form,size:e.target.value})} placeholder="500g"/></Field><Field label="Price" hint="Shown publicly when filled"><div className="cms-money-input"><span>₹</span><input className="cms-input" inputMode="decimal" value={form.price} onChange={e=>setForm({...form,price:e.target.value.replace(/[^0-9.]/g,'')})} placeholder="120"/></div></Field><Field label="MRP" hint="Optional reference price"><div className="cms-money-input"><span>₹</span><input className="cms-input" inputMode="decimal" value={form.mrp} onChange={e=>setForm({...form,mrp:e.target.value.replace(/[^0-9.]/g,'')})} placeholder="150"/></div></Field><Field label="Display order"><input className="cms-input" type="number" min="0" value={form.order} onChange={e=>setForm({...form,order:e.target.value})}/></Field></div>
+      {(!priceValid||!mrpValid)&&<div className="cms-field-warning">Enter prices using numbers only, with up to two decimal places.</div>}
+      <Field label="Description"><textarea className="cms-input" rows="4" value={form.description} onChange={e=>setForm({...form,description:e.target.value})} placeholder="Keep this factual and product-specific."/></Field>
+      <div className="cms-image-editor"><div className="cms-image-large"><ImagePreview src={form.image} alt={form.name||'Product image'}/></div><div><Field label="Product image"><input className="cms-input" value={form.image} onChange={e=>{setImageTouched(true);setForm({...form,image:e.target.value})}} placeholder="/uploads/… or /products/…"/></Field><UploadButton current={form.image} label={imageTouched?'Replace image':'Upload / replace image'} onUploaded={url=>{setImageTouched(true);setForm({...form,image:url})}}/></div></div>
+      <label className="cms-check"><input type="checkbox" checked={!!form.featured} onChange={e=>setForm({...form,featured:e.target.checked})}/><span><b>Feature on Home</b><small>Show this product in the Home featured collection.</small></span></label>
+      <div className="cms-form-actions cms-sticky-actions"><button type="button" className="cms-secondary-btn" onClick={onClose}>Cancel</button><button className="cms-primary-btn" disabled={busy||!priceValid||!mrpValid}>{busy?<RefreshCw className="spin" size={16}/>:<Save size={16}/>} Save product</button></div>
+    </form>
+  </Modal>;
+}
+
+function GalleryEditor({item,onClose,onSaved,onToast}){
+  const [form,setForm]=useState({...item}); const [busy,setBusy]=useState(false);
+  const save=async(e)=>{e.preventDefault();if(!form.src){onToast('Choose an image first.','error');return}setBusy(true);try{const out=await apiRequest(form.id?`/api/gallery/${form.id}`:'/api/gallery',{method:form.id?'PUT':'POST',body:JSON.stringify({...form,order:Number(form.order||0)})});await onSaved(out);onToast(form.id?'Gallery item updated':'Photo added');onClose()}catch(err){onToast(err.message,'error')}finally{setBusy(false)}};
+  return <Modal title={form.id?'Edit gallery item':'Add gallery item'} onClose={onClose}>
+    <form className="cms-form" onSubmit={save}><div className="cms-image-editor gallery-editor"><div className={`cms-image-large ${form.type==='wide'?'wide':''}`}><ImagePreview src={form.src} alt={form.label||'Gallery image'}/></div><div><Field label="Title / caption"><input className="cms-input" value={form.label} onChange={e=>setForm({...form,label:e.target.value})} required placeholder="Collection photograph"/></Field><div className="cms-form-grid"><Field label="Layout"><select className="cms-input" value={form.type} onChange={e=>setForm({...form,type:e.target.value})}><option value="portrait">Portrait</option><option value="wide">Wide</option></select></Field><Field label="Display order"><input className="cms-input" type="number" min="0" value={form.order} onChange={e=>setForm({...form,order:e.target.value})}/></Field></div><Field label="Image URL"><input className="cms-input" value={form.src} onChange={e=>setForm({...form,src:e.target.value})} placeholder="/uploads/…" required/></Field><UploadButton current={form.src} label={form.src?'Replace image':'Upload image'} onUploaded={url=>setForm({...form,src:url})}/></div></div>
+      <div className="cms-info-callout"><Eye size={16}/><span>The public gallery uses the image exactly as this URL resolves. Uploading a new image does not resize it in the CMS.</span></div>
+      <div className="cms-form-actions cms-sticky-actions"><button type="button" className="cms-secondary-btn" onClick={onClose}>Cancel</button><button className="cms-primary-btn" disabled={busy}>{busy?<RefreshCw className="spin" size={16}/>:<Save size={16}/>} Save image</button></div>
+    </form>
+  </Modal>;
+}
+
+function Admin(){
+  const [auth,setAuth]=useState(null); const [authConfigured,setAuthConfigured]=useState(false); const [content,setContent]=useState(null); const [tab,setTab]=useState('dashboard'); const [mobileMenu,setMobileMenu]=useState(false); const [query,setQuery]=useState(''); const [category,setCategory]=useState('All'); const [priceFilter,setPriceFilter]=useState('all'); const [productEditor,setProductEditor]=useState(null); const [galleryEditor,setGalleryEditor]=useState(null); const [busy,setBusy]=useState(true); const [toast,setToast]=useState(null); const [confirm,setConfirm]=useState(null); const [lastSaved,setLastSaved]=useState(null);
+  const notify=(message,type='success')=>{setToast({message,type});window.clearTimeout(notify.timer);notify.timer=window.setTimeout(()=>setToast(null),3500)};
+  const refresh=async(showToast=false)=>{setBusy(true);try{const out=await apiRequest('/api/content',{cache:'no-store'});setContent(out);setLastSaved(new Date());if(showToast)notify('Content refreshed')}catch(e){if(e.message==='Authentication required')setAuth(false);else notify(e.message,'error')}finally{setBusy(false)}};
+  useEffect(()=>{(async()=>{try{const s=await apiRequest('/api/admin/session');if(s.ok){setAuth(true);await refresh();return}}catch(_){}try{const a=await apiRequest('/api/auth/status');setAuthConfigured(!!a.configured);setAuth(false)}catch(e){setAuth(false)}})()},[]);
+  useEffect(()=>{if(!mobileMenu)return;const previous=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=previous}},[mobileMenu]);
+  if(auth===null)return <div className="cms-loading"><RefreshCw className="spin" size={22}/><span>Loading CMS…</span></div>;
+  if(!auth)return <LoginScreen configured={authConfigured} onDone={async()=>{setAuth(true);await refresh()}}/>;
+  if(!content)return <div className="cms-loading"><RefreshCw className="spin" size={22}/><span>Loading content…</span></div>;
+  const nav=[['dashboard','Dashboard',LayoutDashboard],['products','Products',Package,content.products.length],['gallery','Gallery',ImagePlus,content.gallery.length],['site','Website',Globe2],['backup','Backup',Database]];
+  const products=[...content.products].sort((a,b)=>(a.order??0)-(b.order??0)); const gallery=[...content.gallery].sort((a,b)=>(a.order??0)-(b.order??0));
+  const categories=['All',...new Set(products.map(p=>p.category).filter(Boolean))];
+  const filteredProducts=products.filter(p=>{const matchesQuery=`${p.name} ${p.category} ${p.size}`.toLowerCase().includes(query.toLowerCase());const matchesCategory=category==='All'||p.category===category;const matchesPrice=priceFilter==='all'||(priceFilter==='published'?p.price!==''&&p.price!=null:p.price===''||p.price==null);return matchesQuery&&matchesCategory&&matchesPrice});
+  const navigate=(next)=>{setTab(next);setMobileMenu(false);window.scrollTo({top:0,behavior:'smooth'})};
+  const requestDelete=(kind,item)=>setConfirm({kind,item});
+  async function performDelete(){if(!confirm)return;const {kind,item}=confirm;try{if(kind==='product')await apiRequest(`/api/products/${item.id}`,{method:'DELETE'});else await apiRequest(`/api/gallery/${item.id}`,{method:'DELETE'});setConfirm(null);await refresh();notify(`${kind==='product'?'Product':'Photo'} deleted`)}catch(e){notify(e.message,'error')}}
+  async function logout(){try{await apiRequest('/api/auth/logout',{method:'POST'})}finally{localStorage.removeItem('csrfToken');setAuth(false)}}
+  const savedProduct=async()=>{await refresh();setLastSaved(new Date())}; const savedGallery=async()=>{await refresh();setLastSaved(new Date())};
+  const productPriceCount=products.filter(p=>p.price!==''&&p.price!=null).length; const featuredCount=products.filter(p=>p.featured).length;
+  return (
+    <div className="cms-shell">
+      <>
+        <aside className={`cms-sidebar ${mobileMenu?'open':''}`}><div className="cms-sidebar-head"><Link to="/" className="cms-brand"><img src="/brand/durga-foods-logo.png" alt="Durga Foods"/></Link><button className="cms-icon-btn cms-mobile-only" onClick={()=>setMobileMenu(false)} aria-label="Close menu"><X size={19}/></button></div><div className="cms-sidebar-kicker">CONTENT MANAGEMENT</div><nav className="cms-sidebar-nav">{nav.map(([id,label,Icon,count])=><button key={id} className={tab===id?'active':''} onClick={()=>navigate(id)}><Icon size={17}/><span>{label}</span>{count!=null&&<b>{count}</b>}</button>)}</nav><div className="cms-sidebar-bottom"><Link to="/" target="_blank"><ExternalLink size={15}/> View website</Link><button onClick={logout}><LogOut size={15}/> Sign out</button></div></aside>
+    {mobileMenu&&<button className="cms-sidebar-scrim" aria-label="Close menu" onClick={()=>setMobileMenu(false)}/>} 
+    <main className="cms-main">
+      <header className="cms-topbar">
+        <div className="cms-topbar-left">
+          <button className="cms-mobile-menu" onClick={()=>setMobileMenu(true)} aria-label="Open menu">
+            <Menu size={20}/>
+          </button>
+          <div>
+            <span className="cms-kicker">DURGA FOODS CMS</span>
+            <h1>{nav.find(x=>x[0]===tab)?.[1] || 'Dashboard'}</h1>
+          </div>
+        </div>
+        <div className="cms-top-actions">
+          <span className={`cms-save-status ${busy?'syncing':''}`}>
+            {busy?<RefreshCw className="spin" size={13}/>:<Check size={13}/>}
+          </span>
+          {busy?'Syncing':'Live'}
+          <button className="cms-icon-btn" onClick={()=>refresh(true)} title="Refresh content" aria-label="Refresh content">
+            <RefreshCw size={17}/>
+          </button>
+          <Link className="cms-website-btn" to="/" target="_blank">
+            <Eye size={16}/> Website
+          </Link>
+        </div>
+      </header>
+
+      {tab==='dashboard'&&(
+        <Dashboard content={content} onTab={navigate} onQuickPrice={()=>{navigate('products');setPriceFilter('missing')}} onToast={notify}/>
+      )}
+
+      {tab==='products'&&(
+        <section className="cms-section">
+          <div className="cms-section-head">
+            <div>
+              <span className="cms-kicker">CATALOGUE</span>
+              <h2>Products & prices</h2>
+              <p>One place to control every public product, price, MRP, image and Home placement.</p>
+            </div>
+            <button className="cms-primary-btn" onClick={()=>setProductEditor({...emptyProduct,order:products.length})}>
+              <Plus size={16}/> Add product
+            </button>
+          </div>
+          <div className="cms-toolbar cms-product-toolbar">
+            <label className="cms-search">
+              <Search size={16}/>
+              <input
+                value={query}
+                onChange={e=>setQuery(e.target.value)}
+                placeholder="Search products, category or size"
+                aria-label="Search products"
+              />
+              {query&&(
+                <button
+                  onClick={()=>setQuery('')}
+                  aria-label="Clear search"
+                >
+                  <X size={14}/>
+                </button>
+              )}
+            </label>
+            <div className="cms-filter-rail">
+              <select
+                className="cms-filter"
+                value={category}
+                onChange={e=>setCategory(e.target.value)}
+                aria-label="Filter category"
+              >
+                {categories.map(c=>(<option key={c}>{c}</option>))}
+              </select>
+              <select
+                className="cms-filter"
+                value={priceFilter}
+                onChange={e=>setPriceFilter(e.target.value)}
+                aria-label="Filter price"
+              >
+                <option value="all">All prices</option>
+                <option value="published">Price set</option>
+                <option value="missing">Price missing</option>
+              </select>
+            </div>
+            <span className="cms-count">
+              {filteredProducts.length} of {products.length}
+            </span>
+          </div>
+          {priceFilter==='missing'&&(
+            <div className="cms-filter-banner">
+              <BarChart3 size={16}/>
+              <span>{products.length-productPriceCount} products still need a public price.</span>
+              <button onClick={()=>setPriceFilter('all')}>Show all</button>
+            </div>
+          )}
+          <div className="cms-product-grid">
+            {filteredProducts.map(p=>(
+              <article
+                className="cms-product-card"
+                key={p.id}
+              >
+                <div className="cms-product-media">
+                  <ImagePreview src={p.image} alt={p.name}/>
+                  <div className="cms-product-badges">
+                    <span>{p.category}</span>
+                    {p.featured&&<b>Featured</b>}
+                  </div>
+                  <button
+                    className="cms-media-edit"
+                    onClick={()=>setProductEditor({...p})}
+                    aria-label={`Edit ${p.name}`}
+                  >
+                    <Pencil size={14}/>
+                  </button>
+                </div>
+                <div className="cms-product-body">
+                  <div className="cms-product-title-row">
+                    <div>
+                      <h3>{p.name}</h3>
+                      <p>{p.size||'Size not set'}</p>
+                    </div>
+                    <div className="cms-price-stack">
+                      {p.price?<strong>₹{p.price}</strong>:<em>No price</em>}
+                      {p.mrp&&<small>MRP ₹{p.mrp}</small>}
+                    </div>
+                  </div>
+                  <div className="cms-card-actions">
+                    <button
+                      onClick={()=>setProductEditor({...p})}
+                      ><Pencil size={15}/> Edit
+                    </button>
+                    <button
+                      className="danger"
+                      onClick={()=>requestDelete('product',p)}
+                      ><Trash2 size={15}/> Delete
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+          {!filteredProducts.length&&(
+            <EmptyState
+              text={query||category!=='All'||priceFilter!=='all'?'No products match these filters.':'No products yet.'}
+              action={query||category!=='All'||priceFilter!=='all'?()=>{setQuery('');setCategory('All');setPriceFilter('all')} : ()=>setProductEditor({...emptyProduct,order:products.length})}
+              actionLabel={query||category!=='All'||priceFilter!=='all'?'Clear filters':'Add first product'}
+            />
+          )}
+        </section>
+      )}
+
+      {tab==='gallery'&&(
+        <section className="cms-section">
+          <div className="cms-section-head">
+            <div>
+              <span className="cms-kicker">MEDIA LIBRARY</span>
+              <h2>Gallery library</h2>
+              <p>Upload, replace, reorder and remove the photographs shown across the public site.</p>
+            </div>
+            <button className="cms-primary-btn" onClick={()=>setGalleryEditor({...emptyGallery,order:gallery.length})}>
+              <Plus size={16}/> Add photo
+            </button>
+          </div>
+          <div className="cms-gallery-toolbar">
+            <div className="cms-library-note">
+              <ImagePlus size={16}/>
+              <span>{gallery.length} photographs · full source URLs are preserved</span>
+            </div>
+          </div>
+          <div className="cms-gallery-grid">
+            {gallery.map(g=>(
+              <article
+                className="cms-gallery-card"
+                key={g.id}
+              >
+                <div
+                  className={`cms-gallery-media ${g.type==='wide'?'wide':''}`}
+                >
+                  <ImagePreview src={g.src} alt={g.label}/>
+                  <span className="cms-gallery-type">{g.type}</span>
+                  <button
+                    className="cms-media-edit"
+                    onClick={()=>setGalleryEditor({...g})}
+                    aria-label={`Edit ${g.label}`}
+                  >
+                    <Pencil size={14}/>
+                  </button>
+                </div>
+                <div className="cms-gallery-body">
+                  <div>
+                    <h3>{g.label}</h3>
+                    <p>Display order {g.order}</p>
+                  </div>
+                  <div className="cms-card-actions">
+                    <button
+                      onClick={()=>setGalleryEditor({...g})}
+                      ><Pencil size={15}/> Edit
+                    </button>
+                    <button
+                      className="danger"
+                      onClick={()=>requestDelete('gallery',g)}
+                      ><Trash2 size={15}/> Delete
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+          {!gallery.length&&(
+            <EmptyState
+              text="No gallery photos yet."
+              action={()=>setGalleryEditor({...emptyGallery})}
+              actionLabel="Add first photo"
+            />
+          )}
+        </section>
+      )}
+
+      {tab==='site'&&(
+        <SiteEditor
+          content={content}
+          onSaved={next=>{setContent(next);setLastSaved(new Date());notify('Website settings saved')}}
+          onToast={notify}
+        />
+      )}
+
+      {tab==='backup'&&(
+        <BackupEditor
+          content={content}
+          onImported={next=>{setContent(next);setLastSaved(new Date());notify('Backup restored')}}
+          onToast={notify}
+        />
+      )}
+    </main>
+    <Toast toast={toast} onClose={()=>setToast(null)}/>
+    {confirm&&<ConfirmDialog title={`Delete ${confirm.kind==='product'?'product':'photo'}?`} message={`“${confirm.kind==='product'?confirm.item.name:confirm.item.label}” will be removed from the CMS. This cannot be undone.`} onCancel={()=>setConfirm(null)} onConfirm={performDelete}/>}
+    <>
+      {productEditor&&<ProductEditor product={productEditor} onClose={()=>setProductEditor(null)} onSaved={savedProduct} onToast={notify}/>}
+      {galleryEditor&&<GalleryEditor item={galleryEditor} onClose={()=>setGalleryEditor(null)} onSaved={savedGallery} onToast={notify}/>}
+    </>
+    </>
+  </div>
+);
+}
+
+function Dashboard({content,onTab,onQuickPrice}){
+  const products=content.products||[]; const gallery=content.gallery||[]; const priced=products.filter(p=>p.price!==''&&p.price!=null); const featured=products.filter(p=>p.featured); const missing=products.length-priced.length; const recent=[...products].sort((a,b)=>(a.order??0)-(b.order??0)).slice(0,5);
+  return <section className="cms-section cms-dashboard"><div className="cms-welcome"><div><span className="cms-kicker">CONTROL CENTRE</span><h2>Run the storefront.</h2><p>Everything important is one tap away. Update a price, swap a photograph, change the homepage or make a safe backup.</p><div className="cms-welcome-actions"><button className="cms-primary-btn" onClick={()=>onTab('products')}><Package size={16}/> Manage products</button><button className="cms-secondary-btn" onClick={()=>onTab('site')}><Settings2 size={16}/> Edit website</button></div></div><div className="cms-device-note"><Smartphone size={19}/><div><b>Touch-first</b><span>Designed for phones, tablets & desktop</span></div></div></div>
+    <div className="cms-stat-grid"><button onClick={()=>onTab('products')}><Package/><b>{products.length}</b><span>Products</span><small>Catalogue items</small></button><button onClick={()=>onTab('products')}><BarChart3/><b>{priced.length}</b><span>Prices set</span><small>{missing?`${missing} still missing`:'All products priced'}</small></button><button onClick={()=>onTab('gallery')}><ImagePlus/><b>{gallery.length}</b><span>Photos</span><small>Gallery library</small></button><button onClick={()=>onTab('products')}><Check/><b>{featured.length}</b><span>Featured</span><small>Shown on Home</small></button></div>
+    {missing>0&&<button className="cms-attention" onClick={onQuickPrice}><span className="cms-attention-icon"><AlertTriangle size={17}/></span><span><b>{missing} product{missing===1?'':'s'} need a price</b><small>Open the filtered price list and fill them in.</small></span><ChevronRight size={18}/></button>}
+    <div className="cms-dashboard-columns"><div className="cms-panel"><div className="cms-panel-head"><div><span className="cms-kicker">QUICK ACCESS</span><h3>Common tasks</h3></div></div><div className="cms-quick-grid"><button onClick={()=>onTab('products')}><Package/><div><b>Add or change a price</b><span>Product, price, MRP, image and description.</span></div><ChevronRight/></button><button onClick={()=>onTab('site')}><Settings2/><div><b>Edit homepage & contact</b><span>Hero, collection photo, phone, WhatsApp and address.</span></div><ChevronRight/></button><button onClick={()=>onTab('gallery')}><FolderOpen/><div><b>Manage photographs</b><span>Upload, replace, reorder or delete site images.</span></div><ChevronRight/></button><button onClick={()=>onTab('backup')}><Database/><div><b>Create a backup</b><span>Save your current CMS content before major changes.</span></div><ChevronRight/></button></div></div>
+      <div className="cms-panel"><div className="cms-panel-head"><div><span className="cms-kicker">CATALOGUE</span><h3>Products at a glance</h3></div><button className="cms-text-btn" onClick={()=>onTab('products')}>View all <ArrowLeft size={14}/></button></div><div className="cms-mini-list">{recent.map(p=><button key={p.id} onClick={()=>onTab('products')}><span className="cms-mini-thumb"><ImagePreview src={p.image} alt=""/></span><span><b>{p.name}</b><small>{p.size||'—'} · {p.price?`₹${p.price}`:'No price'}</small></span><ChevronRight size={16}/></button>)}</div></div></div>
+  </section>;
+}
+
+function SiteEditor({content,onSaved,onToast}){
+  const [form,setForm]=useState(content.site); const [busy,setBusy]=useState(false); useEffect(()=>setForm(content.site),[content.site]);
+  const dirty=JSON.stringify(form)!==JSON.stringify(content.site);
+  async function save(e){e.preventDefault();setBusy(true);try{const out=await apiRequest('/api/settings',{method:'PUT',body:JSON.stringify({...form,featuredProductIds:form.featuredProductIds||[]})});onSaved({...content,site:out});}catch(e){onToast(e.message,'error')}finally{setBusy(false)}}
+  function toggleFeatured(id){const set=new Set(form.featuredProductIds||[]);set.has(id)?set.delete(id):set.add(id);setForm({...form,featuredProductIds:[...set]})}
+  const set=(key,value)=>setForm(prev=>({...prev,[key]:value})); const products=content.products||[];
+  return (
+    <section className="cms-section">
+      <div className="cms-section-head">
+        <div>
+          <span className="cms-kicker">WEBSITE CONTROL</span>
+          <h2>Homepage & site settings</h2>
+          <p>Change public-facing copy, imagery, featured products, contact details, SEO and marquee text without touching code.</p>
+        </div>
+        <button className="cms-primary-btn" onClick={save} disabled={busy||!dirty}>
+          {busy?<RefreshCw className="spin" size={16}/>:<Save size={16}/>} {dirty?'Save changes':'All changes saved'}
+        </button>
+      </div>
+      {dirty&&(
+        <div className="cms-unsaved">
+          <span><span className="cms-unsaved-dot"/> Unsaved changes</span>
+          <button onClick={()=>setForm(content.site)}>Discard changes</button>
+        </div>
+      )}
+      <form className="cms-form cms-card-form" onSubmit={save}>
+        <div className="cms-site-layout"><div className="cms-site-main">
+          <div className="cms-panel"><div className="cms-panel-head"><div><span className="cms-kicker">HOME</span><h3>Hero content</h3></div><span className="cms-live-pill">Live on Home</span></div><div className="cms-form-grid"><Field label="Brand name"><input className="cms-input" value={form.brandName||''} onChange={e=>set('brandName',e.target.value)}/></Field><Field label="Announcement bar"><input className="cms-input" value={form.announcement||''} onChange={e=>set('announcement',e.target.value)}/></Field><Field label="Hero eyebrow"><input className="cms-input" value={form.heroEyebrow||''} onChange={e=>set('heroEyebrow',e.target.value)}/></Field><Field label="Hero title — first line"><input className="cms-input" value={form.heroTitleLine1||''} onChange={e=>set('heroTitleLine1',e.target.value)}/></Field><Field label="Hero title — second line"><input className="cms-input" value={form.heroTitleLine2||''} onChange={e=>set('heroTitleLine2',e.target.value)}/></Field><Field label="Footer short brand"><input className="cms-input" value={form.shortBrand||''} onChange={e=>set('shortBrand',e.target.value)}/></Field></div><Field label="Hero description"><textarea className="cms-input" rows="4" value={form.heroDescription||''} onChange={e=>set('heroDescription',e.target.value)}/></Field>
+          <div className="cms-form-grid"><ImageField label="Hero main image" value={form.heroMainImage||''} onChange={v=>set('heroMainImage',v)}/><ImageField label="Home collection image" value={form.homeCollectionImage||''} onChange={v=>set('homeCollectionImage',v)}/></div></div>
+        <div className="cms-panel"><div className="cms-panel-head"><div><span className="cms-kicker">HOME COLLECTION</span><h3>Featured products</h3></div><span className="cms-count">{(form.featuredProductIds||[]).length} selected</span></div><p className="cms-muted">Choose which catalogue items appear in the Home featured section. Product prices update here automatically.</p><div className="cms-feature-list">{products.map(p=><label key={p.id} className={(form.featuredProductIds||[]).includes(p.id)?'selected':''}><input type="checkbox" checked={(form.featuredProductIds||[]).includes(p.id)} onChange={()=>toggleFeatured(p.id)}/><span className="cms-feature-thumb"><ImagePreview src={p.image} alt=""/></span><span className="cms-feature-copy"><b>{p.name}</b><small>{p.category} · {p.size||'No size'}</small></span><strong>{p.price?`₹${p.price}`:'—'}</strong></label>)}</div></div>
+        <div className="cms-panel"><div className="cms-panel-head"><div><span className="cms-kicker">CONTACT</span><h3>Contact details</h3></div></div><div className="cms-form-grid"><Field label="Phone"><input className="cms-input" inputMode="tel" value={form.phone||''} onChange={e=>set('phone',e.target.value)}/></Field><Field label="Consumer care"><input className="cms-input" inputMode="tel" value={form.consumerCare||''} onChange={e=>set('consumerCare',e.target.value)}/></Field><Field label="WhatsApp number" hint="Use country code, e.g. 919020654578"><input className="cms-input" inputMode="tel" value={form.whatsapp||''} onChange={e=>set('whatsapp',e.target.value)}/></Field><Field label="Map URL"><input className="cms-input" inputMode="url" value={form.mapUrl||''} onChange={e=>set('mapUrl',e.target.value)}/></Field><Field label="Location — first line"><input className="cms-input" value={form.locationLine1||''} onChange={e=>set('locationLine1',e.target.value)}/></Field><Field label="Location — second line"><input className="cms-input" value={form.locationLine2||''} onChange={e=>set('locationLine2',e.target.value)}/></Field></div><Field label="Footer description"><input className="cms-input" value={form.footerDescription||''} onChange={e=>set('footerDescription',e.target.value)}/></Field></div>
+        <div className="cms-panel"><div className="cms-panel-head"><div><span className="cms-kicker">DISCOVERY</span><h3>SEO & marquee</h3></div></div><div className="cms-form-grid"><Field label="Browser / page title"><input className="cms-input" value={form.metaTitle||''} onChange={e=>set('metaTitle',e.target.value)}/></Field><Field label="Meta description"><textarea className="cms-input" rows="3" value={form.metaDescription||''} onChange={e=>set('metaDescription',e.target.value)}/></Field></div><Field label="Marquee items" hint="One item per line"><textarea className="cms-input" rows="5" value={(form.marqueeItems||[]).join('\n')} onChange={e=>set('marqueeItems',e.target.value.split('\n').map(x=>x.trim()).filter(Boolean))}/></Field></div>
+      </div><aside className="cms-site-preview"><div className="cms-preview-sticky"><div className="cms-panel"><div className="cms-panel-head"><div><span className="cms-kicker">PREVIEW</span><h3>Home snapshot</h3></div><Link to="/" target="_blank" className="cms-text-btn">Open <ExternalLink size={13}/></Link></div><div className="cms-preview-card"><div className="cms-preview-image"><ImagePreview src={form.heroMainImage} alt="Hero preview"/></div><span className="cms-kicker">{form.heroEyebrow||'DURGA FOODS'}</span><h4>{form.heroTitleLine1||'Made for'}<br/><i>{form.heroTitleLine2||'the table.'}</i></h4><p>{form.heroDescription||'Your hero description appears here.'}</p><div className="cms-preview-meta"><span>Since 1996</span><span>{(form.featuredProductIds||[]).length} featured</span></div></div><div className="cms-info-callout"><Eye size={15}/><span>This is a content preview, not a separate draft website.</span></div></div></div></aside></div>
+      <div className="cms-form-actions cms-desktop-end cms-save-footer"><button className="cms-secondary-btn" type="button" onClick={()=>setForm(content.site)} disabled={!dirty}>Discard</button><button className="cms-primary-btn" disabled={busy||!dirty}>{busy?<RefreshCw className="spin" size={16}/>:<Save size={16}/>} Save website</button></div>
+    </form>
+    </section>
+  );
+}
+
+function ImageField({label,value,onChange}){return <div className="cms-image-field"><Field label={label}><input className="cms-input" value={value} onChange={e=>onChange(e.target.value)} placeholder="/products/… or /uploads/…"/></Field><div className="cms-image-inline"><div><ImagePreview src={value} alt=""/></div><UploadButton current={value} label="Replace" onUploaded={onChange}/></div></div>}
+
+function BackupEditor({content,onImported,onToast}){
+  const [busy,setBusy]=useState(false); const fileRef=useRef(null);
+  async function exportBackup(){try{const data=await apiRequest('/api/export');const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`durga-content-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);onToast('Backup downloaded')}catch(e){onToast(e.message,'error')}}
+  async function importBackup(file){if(!file)return;setBusy(true);try{const data=JSON.parse(await file.text());if(!data||!data.site||!Array.isArray(data.products)||!Array.isArray(data.gallery))throw new Error('This is not a valid Durga Foods CMS backup.');if(!window.confirm('Replace the current CMS content with this backup?'))return;const out=await apiRequest('/api/import',{method:'POST',body:JSON.stringify(data)});onImported(out)}catch(e){onToast(e.message,'error')}finally{setBusy(false);if(fileRef.current)fileRef.current.value=''}}
+  return (
+    <section className="cms-section">
+      <div className="cms-section-head">
+        <div>
+          <span className="cms-kicker">DATA SAFETY</span>
+          <h2>Backup & restore</h2>
+          <p>Protect your catalogue and website settings before major edits. Backups contain content, not your admin password.</p>
+        </div>
+        <button className="cms-primary-btn" onClick={exportBackup}>
+          <Download size={16}/> Download backup
+        </button>
+      </div>
+      <div className="cms-backup-hero">
+        <div className="cms-backup-icon"><Database size={22}/></div>
+        <div>
+          <b>Your current snapshot</b>
+          <span>{content.products.length} products · {content.gallery.length} photos · site settings</span>
+        </div>
+        <button className="cms-secondary-btn" onClick={exportBackup}>
+          <Download size={15}/> Export JSON
+        </button>
+      </div>
+      <div className="cms-backup-grid">
+        <div className="cms-panel">
+          <div className="cms-backup-step">
+            <span>01</span>
+            <div>
+              <h3>Export a backup</h3>
+              <p>Download a portable JSON copy of your current content. Keep it somewhere safe before bulk edits or deletions.</p>
+              <button className="cms-secondary-btn" onClick={exportBackup}>
+                <Download size={15}/> Export current content
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="cms-panel">
+          <div className="cms-backup-step">
+            <span>02</span>
+            <div>
+              <h3>Restore a backup</h3>
+              <p>Choose a JSON backup created by this CMS. Restoring replaces the current content after confirmation.</p>
+              <button className="cms-upload-btn cms-upload-big" onClick={()=>fileRef.current?.click()} disabled={busy}>
+                {busy?<RefreshCw className="spin" size={16}/>:<Upload size={16}/>} {busy?'Restoring…':'Choose backup'}
+              </button>
+              <input ref={fileRef} hidden type="file" accept="application/json,.json" onChange={e=>importBackup(e.target.files?.[0])}/>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="cms-info-callout">
+        <ShieldCheck size={16}/>
+        <span>For safety, the backup does not include the admin password or active login sessions.</span>
+      </div>
+    </section>
+  );
+}
+function EmptyState({text,action,actionLabel}){return <div className="cms-empty"><Database size={22}/><strong>{text}</strong><p>There is nothing to show with the current filters.</p>{action&&<button className="cms-secondary-btn" onClick={action}>{actionLabel}</button>}</div>}
+
+export default Admin;

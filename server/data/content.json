@@ -1,0 +1,245 @@
+{
+  "site": {
+    "brandName": "Durga Foods",
+    "shortBrand": "Durga Pickles",
+    "announcement": "Durga Foods • Since 1996 • Pazhayannur, Thrissur, Kerala",
+    "heroEyebrow": "DURGA FOODS • SINCE 1996",
+    "heroTitleLine1": "Made for",
+    "heroTitleLine2": "the table.",
+    "heroDescription": "Explore the current Durga collection of pickles, kondattam and traditional food products.",
+    "heroMainImage": "/products/originals/collection-wide-1.jpg",
+    "homeCollectionImage": "/products/originals/collection-wide-2.jpg",
+    "footerDescription": "Durga Pickles · Sree Durga Food Products",
+    "phone": "04884 225174",
+    "consumerCare": "90206 54578",
+    "whatsapp": "919020654578",
+    "locationLine1": "Thekkethara, Pazhayannur",
+    "locationLine2": "Thrissur, Kerala — 680 587",
+    "mapUrl": "https://www.google.com/maps/search/?api=1&query=Thekkethara%20Pazhayannur%20Thrissur%20Kerala%20680587",
+    "metaTitle": "Durga Foods — Since 1996",
+    "metaDescription": "Durga Pickles — Sree Durga Food Products, Pazhayannur, Thrissur, Kerala. Since 1996.",
+    "marqueeItems": [
+      "DURGA FOODS",
+      "SINCE 1996",
+      "PAZHAYANNUR · THRISSUR",
+      "TRADITIONAL FAVOURITES",
+      "SREE DURGA FOOD PRODUCTS"
+    ],
+    "featuredProductIds": [
+      "cut-mango-pickle",
+      "avakkai-mango-pickle",
+      "tender-mango-pickle",
+      "lime-pickle",
+      "pullinji-pickle",
+      "rice-kondattam"
+    ]
+  },
+  "products": [
+    {
+      "id": "cut-mango-pickle",
+      "name": "Cut Mango Pickle",
+      "category": "Pickles",
+      "size": "500g",
+      "image": "/products/originals/cut-mango-pickle.jpg",
+      "description": "Durga Cut Mango Pickle. Net weight: 500g.",
+      "price": "",
+      "mrp": "",
+      "featured": true,
+      "order": 0
+    },
+    {
+      "id": "avakkai-mango-pickle",
+      "name": "Avakkai Mango Pickle",
+      "category": "Pickles",
+      "size": "500g",
+      "image": "/products/originals/avakkai-mango-pickle.jpg",
+      "description": "Durga Avakkai Mango Pickle. Net weight: 500g.",
+      "price": "",
+      "mrp": "",
+      "featured": true,
+      "order": 1
+    },
+    {
+      "id": "tender-mango-pickle",
+      "name": "Tender Mango Pickle",
+      "category": "Pickles",
+      "size": "500g",
+      "image": "/products/originals/tender-mango-pickle.jpg",
+      "description": "Durga Tender Mango Pickle. Net weight: 500g.",
+      "price": "",
+      "mrp": "",
+      "featured": true,
+      "order": 2
+    },
+    {
+      "id": "lime-pickle",
+      "name": "Lime Pickle",
+      "category": "Pickles",
+      "size": "500g",
+      "image": "/products/originals/lime-pickle.jpg",
+      "description": "Durga Lime Pickle. Net weight: 500g.",
+      "price": "",
+      "mrp": "",
+      "featured": true,
+      "order": 3
+    },
+    {
+      "id": "pullinji-pickle",
+      "name": "Pullinji Pickle",
+      "category": "Pickles",
+      "size": "200g",
+      "image": "/products/originals/pullinji-pickle.jpg",
+      "description": "Durga Pullinji Pickle. Net weight: 200g.",
+      "price": "",
+      "mrp": "",
+      "featured": true,
+      "order": 4
+    },
+    {
+      "id": "rice-kondattam",
+      "name": "Rice Kondattam",
+      "category": "Kondattam",
+      "size": "200g",
+      "image": "/products/originals/rice-kondattam.jpg",
+      "description": "Durga Rice Kondattam. Net weight: 200g.",
+      "price": "",
+      "mrp": "",
+      "featured": true,
+      "order": 5
+    },
+    {
+      "id": "payar-kondattam",
+      "name": "Payar Kondattam",
+      "category": "Kondattam",
+      "size": "100g",
+      "image": "/products/originals/payar-kondattam.jpg",
+      "description": "Durga Payar Kondattam. Net weight: 100g.",
+      "price": "",
+      "mrp": "",
+      "featured": false,
+      "order": 6
+    },
+    {
+      "id": "curd-chilli",
+      "name": "Curd Chilli",
+      "category": "Kondattam",
+      "size": "100g",
+      "image": "/products/originals/curd-chilli.jpg",
+      "description": "Durga Curd Chilli. Net weight: 100g.",
+      "price": "",
+      "mrp": "",
+      "featured": false,
+      "order": 7
+    },
+    {
+      "id": "coconut-chammandhi-podi",
+      "name": "Coconut Chammandhi Podi",
+      "category": "Powders",
+      "size": "100g",
+      "image": "/products/originals/coconut-chammandhi-podi.jpg",
+      "description": "Durga Coconut Chammandhi Podi. Net weight: 100g.",
+      "price": "",
+      "mrp": "",
+      "featured": false,
+      "order": 8
+    },
+    {
+      "id": "chutney-powder",
+      "name": "Chutney Powder",
+      "category": "Powders",
+      "size": "100g",
+      "image": "/products/originals/chutney-powder.jpg",
+      "description": "Durga Chutney Powder. Net weight: 100g.",
+      "price": "",
+      "mrp": "",
+      "featured": false,
+      "order": 9
+    }
+  ],
+  "gallery": [
+    {
+      "id": "gallery-1",
+      "src": "/products/originals/collection-wide-1.jpg",
+      "label": "The Durga collection — photograph 01",
+      "type": "wide",
+      "order": 0
+    },
+    {
+      "id": "gallery-2",
+      "src": "/products/originals/cut-mango-pickle.jpg",
+      "label": "Cut Mango Pickle",
+      "type": "portrait",
+      "order": 1
+    },
+    {
+      "id": "gallery-3",
+      "src": "/products/originals/tender-mango-pickle.jpg",
+      "label": "Tender Mango Pickle",
+      "type": "portrait",
+      "order": 2
+    },
+    {
+      "id": "gallery-4",
+      "src": "/products/originals/lime-pickle.jpg",
+      "label": "Lime Pickle",
+      "type": "portrait",
+      "order": 3
+    },
+    {
+      "id": "gallery-5",
+      "src": "/products/originals/coconut-chammandhi-podi.jpg",
+      "label": "Coconut Chammandhi Podi",
+      "type": "portrait",
+      "order": 4
+    },
+    {
+      "id": "gallery-6",
+      "src": "/products/originals/chutney-powder.jpg",
+      "label": "Chutney Powder",
+      "type": "portrait",
+      "order": 5
+    },
+    {
+      "id": "gallery-7",
+      "src": "/products/originals/rice-kondattam.jpg",
+      "label": "Rice Kondattam",
+      "type": "portrait",
+      "order": 6
+    },
+    {
+      "id": "gallery-8",
+      "src": "/products/originals/payar-kondattam.jpg",
+      "label": "Payar Kondattam",
+      "type": "portrait",
+      "order": 7
+    },
+    {
+      "id": "gallery-9",
+      "src": "/products/originals/curd-chilli.jpg",
+      "label": "Curd Chilli",
+      "type": "portrait",
+      "order": 8
+    },
+    {
+      "id": "gallery-10",
+      "src": "/products/originals/collection-wide-2.jpg",
+      "label": "The Durga collection — photograph 02",
+      "type": "wide",
+      "order": 9
+    },
+    {
+      "id": "gallery-11",
+      "src": "/products/originals/avakkai-mango-pickle.jpg",
+      "label": "Avakkai Mango Pickle",
+      "type": "portrait",
+      "order": 10
+    },
+    {
+      "id": "gallery-12",
+      "src": "/products/originals/pullinji-pickle.jpg",
+      "label": "Pullinji Pickle",
+      "type": "portrait",
+      "order": 11
+    }
+  ]
+}

@@ -9,5 +9,7 @@ import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
 import Gallery from './pages/Gallery';
 import Contact from './pages/Contact';
-function Routed(){const location=useLocation();return <Layout><AnimatePresence mode="wait"><PageTransition key={location.pathname}><Routes location={location}><Route path="/" element={<Home/>}/><Route path="/products" element={<Products/>}/><Route path="/products/:id" element={<ProductDetail/>}/><Route path="/gallery" element={<Gallery/>}/><Route path="/contact" element={<Contact/>}/><Route path="*" element={<Home/>}/></Routes></PageTransition></AnimatePresence></Layout>}
-export default function App(){return <><ScrollToTop/><Routed/></>}
+import Admin from './pages/Admin';
+
+function PublicRoutes(){const location=useLocation();return <Layout><AnimatePresence mode="wait"><PageTransition key={location.pathname}><Routes location={location}><Route path="/" element={<Home/>}/><Route path="/products" element={<Products/>}/><Route path="/products/:id" element={<ProductDetail/>}/><Route path="/gallery" element={<Gallery/>}/><Route path="/contact" element={<Contact/>}/><Route path="*" element={<Home/>}/></Routes></PageTransition></AnimatePresence></Layout>}
+export default function App(){return <><ScrollToTop/><Routes><Route path="/admin/*" element={<Admin/>}/><Route path="*" element={<PublicRoutes/>}/></Routes></>}

@@ -1,21 +1,27 @@
 {
-  "name": "durga-pickles",
+  "name": "durga-foods-cms",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "node server/index.js",
+    "dev:all": "concurrently -k \"npm:dev\" \"npm:dev:server\"",
     "build": "vite build",
+    "start": "node server/index.js",
     "preview": "vite preview"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
+    "concurrently": "latest",
+    "dotenv": "^17.2.2",
+    "express": "latest",
     "lucide-react": "1.37.0",
     "motion": "13.1.1",
+    "multer": "latest",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-router-dom": "7.18.3",
     "vite": "8.2.2"
-  },
-  "devDependencies": {}
+  }
 }

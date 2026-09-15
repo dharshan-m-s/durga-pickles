@@ -1,2 +1,47 @@
-node_modules/*
-audit/
+# Dependencies
+node_modules/
+
+# Production builds
+dist/
+build/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Runtime uploads
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Runtime/database data
+server/data/*.bak
+server/data/*.tmp
+server/data/*.log
+
+# Logs
+*.log
+logs/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing / coverage
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Local archives
+*.zip
+*.tar
+*.gz
