@@ -1,18 +1,15 @@
 export async function apiRequest(path, options = {}) {
+  const method = options.method || 'GET';
+  const requestPath = path === '/api/export' && method === 'GET' ? '/api/content' : path;
   const headers = new Headers(options.headers || {});
-
-  // Add CSRF token for state-changing operations
-  if (!['GET', 'HEAD', 'OPTIONS'].includes(options.method || 'GET')) {
+  if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
     const csrfToken = localStorage.getItem('csrfToken');
-    if (csrfToken) {
-      headers.set('X-CSRF-Token', csrfToken);
-    }
+    if (csrfToken) headers.set('X-CSRF-Token', csrfToken);
   }
-
   if (options.body && !(options.body instanceof FormData) && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
-  const res = await fetch(path, { ...options, headers, credentials: 'include' });
+  const res = await fetch(requestPath, { ...options, headers, credentials: 'include' });
   const contentType = res.headers.get('content-type') || '';
   const payload = contentType.includes('application/json') ? await res.json() : await res.text();
   if (!res.ok) {
@@ -27,22 +24,14 @@ export function whatsappUrl(number, message = '') {
   return `https://wa.me/${digits}${message ? `?text=${encodeURIComponent(message)}` : ''}`;
 }
 
-// URL sanitization to prevent XSS via javascript: or data: URLs
 export function sanitizeUrl(url) {
   if (!url) return '';
   try {
     const urlObj = new URL(url, window.location.href);
-    // Only allow http, https, or relative URLs
-    if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:' && urlObj.protocol !== '') {
-      return '';
-    }
+    if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:' && urlObj.protocol !== '') return '';
     return urlObj.toString();
   } catch (e) {
-    // If it's not a valid URL, check if it's a relative URL that doesn't start with dangerous protocols
-    if (url.startsWith('javascript:') || url.startsWith('data:') || url.startsWith('vbscript:')) {
-      return '';
-    }
-    // For relative URLs or other cases, return as-is (they'll be handled by the browser's security)
+    if (url.startsWith('javascript:') || url.startsWith('data:') || url.startsWith('vbscript:')) return '';
     return url;
   }
 }
