@@ -1,0 +1,49 @@
+name: Repair production CMS
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply safe CMS repairs
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          p = Path('index.js')
+          s = p.read_text()
+          marker = "app.get('/api/content',async(_,res)=>{try{res.setHeader('Cache-Control','no-store');res.json(await readContent());}catch{res.status(500).json({error:'Could not load CMS content'});}});"
+          route = marker + "\napp.get('/api/export',requireAuth,async(_,res)=>{try{res.setHeader('Content-Disposition','attachment; filename=durga-content.json');res.json(await readContent());}catch{res.status(500).json({error:'Could not export CMS content'});}});"
+          if "app.get('/api/export'" not in s:
+              if marker not in s:
+                  raise SystemExit('content route marker not found')
+              s = s.replace(marker, route, 1)
+              p.write_text(s)
+
+          p = Path('src/pages/Admin.jsx')
+          s = p.read_text()
+          s = s.replace("if(file.size>20*1024*1024)", "if(file.size>4*1024*1024)")
+          s = s.replace("Image must be 20 MB or smaller.", "Image must be 4 MB or smaller.")
+          old = "async function exportBackup(){try{const data=await apiRequest('/api/export');const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});"
+          if old not in s:
+              raise SystemExit('backup export client marker not found')
+          p.write_text(s)
+          PY
+          npm install --no-audit --no-fund
+          npm run build
+      - name: Commit repaired CMS
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.js src/pages/Admin.jsx
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "fix: repair CMS backup export and upload limit"
+          git push
