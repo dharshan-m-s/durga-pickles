@@ -45,6 +45,7 @@ app.post('/api/auth/login',(req,res)=>{if(rateLimited(req))return res.status(429
 app.post('/api/auth/logout',(_,res)=>{clearCookie(res);res.json({ok:true});});
 app.get('/api/admin/session',requireAuth,(_,res)=>res.json({ok:true}));
 app.get('/api/content',async(_,res)=>{try{res.setHeader('Cache-Control','no-store');res.json(await readContent());}catch{res.status(500).json({error:'Could not load CMS content'});}});
+app.get('/api/export',requireAuth,async(_,res)=>{try{res.setHeader('Content-Disposition','attachment; filename=durga-content.json');res.json(await readContent());}catch{res.status(500).json({error:'Could not export CMS content'});}});
 
 app.put('/api/settings',requireAuth,async(req,res)=>{try{const c=await readContent();c.site={...c.site,...req.body};await writeContent(c);res.json(c.site);}catch(e){res.status(503).json({error:e.message});}});
 app.post('/api/upload',requireAuth,upload.single('file'),async(req,res)=>{try{if(!req.file)return res.status(400).json({error:'Choose a supported image under 4 MB.'});if(!process.env.BLOB_READ_WRITE_TOKEN)return res.status(503).json({error:'Vercel Blob storage is not configured.'});const name=req.file.originalname.replace(/[^a-zA-Z0-9._-]/g,'-');const blob=await put(`images/${Date.now()}-${crypto.randomBytes(6).toString('hex')}-${name}`,req.file.buffer,{access:'public',contentType:req.file.mimetype,cacheControlMaxAge:31536000});res.json({url:blob.url,name:req.file.originalname,size:req.file.size});}catch(e){res.status(503).json({error:e.message||'Upload failed'});}});

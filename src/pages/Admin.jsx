@@ -57,7 +57,7 @@ function UploadButton({onUploaded, current='', label='Upload image'}) {
   async function upload(file){
     if(!file)return;
     if(!file.type.startsWith('image/')){alert('Please choose an image file.');return;}
-    if(file.size>20*1024*1024){alert('Image must be 20 MB or smaller.');return;}
+    if(file.size>4*1024*1024){alert('Image must be 4 MB or smaller.');return;}
     setBusy(true);
     try{const fd=new FormData();fd.append('file',file);const out=await apiRequest('/api/upload',{method:'POST',body:fd});onUploaded(out.url);}
     catch(e){alert(e.message)} finally{setBusy(false);if(inputRef.current)inputRef.current.value='';}
