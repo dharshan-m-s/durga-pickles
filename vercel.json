@@ -4,19 +4,28 @@
   "buildCommand": "npm run build",
   "builds": [
     {
-      "src": "index.js",
-      "use": "@vercel/node",
+      "src": "package.json",
+      "use": "@vercel/static-build",
       "config": {
-        "includeFiles": [
-          "public/**"
-        ]
+        "distDir": "public"
       }
+    },
+    {
+      "src": "index.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/(.*)",
+      "src": "/api/(.*)",
       "dest": "/index.js"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
