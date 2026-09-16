@@ -1,9 +1,8 @@
 export async function apiRequest(path, options = {}) {
   const method = options.method || 'GET';
-  const requestPath = path === '/api/export' && method === 'GET' ? '/api/content' : path;
   const headers = new Headers(options.headers || {});
 
-  if (requestPath === '/api/upload' && options.body instanceof FormData) {
+  if (path === '/api/upload' && options.body instanceof FormData) {
     const file = options.body.get('file');
     if (file instanceof File && file.size > 4 * 1024 * 1024) {
       throw new Error('Images must be 4 MB or smaller when uploaded through the CMS.');
@@ -17,7 +16,7 @@ export async function apiRequest(path, options = {}) {
   if (options.body && !(options.body instanceof FormData) && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
-  const res = await fetch(requestPath, { ...options, headers, credentials: 'include' });
+  const res = await fetch(path, { ...options, headers, credentials: 'include' });
   const contentType = res.headers.get('content-type') || '';
   const payload = contentType.includes('application/json') ? await res.json() : await res.text();
   if (!res.ok) {

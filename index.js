@@ -10,10 +10,9 @@ const app = express();
 const root = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.join(root, 'public');
 const adminPassword = String(process.env.ADMIN_PASSWORD || '');
-const passwordFromEnv = adminPassword.length >= 12 && !/^replace-with-/i.test(adminPassword) ? adminPassword : '';
-const BUILT_IN_PASSWORD_SHA256 = '1f9b10217856ffb8312980b304e03653e008aa7824d96df254fcd4efb3753587';
-const expectedPasswordHash = passwordFromEnv ? crypto.createHash('sha256').update(passwordFromEnv).digest('hex') : BUILT_IN_PASSWORD_SHA256;
-const secret = crypto.createHash('sha256').update(expectedPasswordHash).digest();
+const passwordConfigured = adminPassword.length >= 12 && !/^replace-with-/i.test(adminPassword);
+const expectedPasswordHash = passwordConfigured ? crypto.createHash('sha256').update(adminPassword).digest('hex') : '';
+const secret = crypto.createHash('sha256').update(expectedPasswordHash || 'durga-cms-unconfigured-secret').digest();
 const SESSION_TTL = 7 * 24 * 60 * 60 * 1000;
 const CONTENT_PATH = 'cms/content.json';
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 4 * 1024 * 1024 }, fileFilter: (_, file, cb) => cb(null, /^image\/(jpeg|png|webp|gif|avif)$/.test(file.mimetype)) });
@@ -39,9 +38,10 @@ function fail(req){const key=req.headers['x-forwarded-for']||req.socket.remoteAd
 
 app.disable('x-powered-by');
 app.use(express.json({limit:'12mb'}));
+app.use(express.static(publicDir,{index:false,maxAge:'1h'}));
 app.use((req,res,next)=>{res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');res.setHeader('X-Frame-Options','DENY');res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=()');res.setHeader('Content-Security-Policy',"default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self'; frame-ancestors 'none';");if(!['GET','HEAD','OPTIONS'].includes(req.method)&&req.path.startsWith('/api/')&&!req.path.startsWith('/api/auth/login')&&!req.path.startsWith('/api/auth/logout')&&!validCsrf(req))return res.status(403).json({error:'Invalid or expired CSRF token'});next();});
-app.get('/api/auth/status',(_,res)=>res.json({configured:true,setupRequired:false,authenticated:false}));
-app.post('/api/auth/login',(req,res)=>{if(rateLimited(req))return res.status(429).json({error:'Too many attempts. Try again later.'});const candidate=String(req.body?.password||'');const a=crypto.createHash('sha256').update(candidate).digest();const b=Buffer.from(expectedPasswordHash,'hex');if(a.length!==b.length||!crypto.timingSafeEqual(a,b)){fail(req);return res.status(401).json({error:'Incorrect password'});}const payload=`${Date.now()}:${crypto.randomBytes(16).toString('hex')}`;setCookie(res,payload);res.json({ok:true,csrfToken:csrfFor(payload)});});
+app.get('/api/auth/status',(req,res)=>res.json({configured:passwordConfigured,setupRequired:!passwordConfigured,authenticated:authed(req)}));
+app.post('/api/auth/login',(req,res)=>{if(!passwordConfigured)return res.status(503).json({error:'ADMIN_PASSWORD is not configured for this deployment.'});if(rateLimited(req))return res.status(429).json({error:'Too many attempts. Try again later.'});const candidate=String(req.body?.password||'');const a=crypto.createHash('sha256').update(candidate).digest();const b=Buffer.from(expectedPasswordHash,'hex');if(a.length!==b.length||!crypto.timingSafeEqual(a,b)){fail(req);return res.status(401).json({error:'Incorrect password'});}const payload=`${Date.now()}:${crypto.randomBytes(16).toString('hex')}`;setCookie(res,payload);res.json({ok:true,csrfToken:csrfFor(payload)});});
 app.post('/api/auth/logout',(_,res)=>{clearCookie(res);res.json({ok:true});});
 app.get('/api/admin/session',requireAuth,(_,res)=>res.json({ok:true}));
 app.get('/api/content',async(_,res)=>{try{res.setHeader('Cache-Control','no-store');res.json(await readContent());}catch{res.status(500).json({error:'Could not load CMS content'});}});
