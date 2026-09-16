@@ -4,13 +4,7 @@
   "outputDirectory": "public",
   "functions": {
     "index.js": {
-      "includeFiles": ["public/index.html"]
+      "includeFiles": "public/**/*"
     }
-  },
-  "rewrites": [
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
-    }
-  ]
+  }
 }
